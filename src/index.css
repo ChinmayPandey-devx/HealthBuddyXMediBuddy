@@ -4,6 +4,8 @@
   --font-sans: 'Inter', system-ui, sans-serif;
   --color-brand-blue: #2563EB;
   --color-brand-green: #10B981;
+  --color-brand-red: #EF4444;
+  --color-brand-amber: #F59E0B;
   --color-brand-bg: #F3F4F6;
 }
 
@@ -14,6 +16,18 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
 }
 
 .animate-stroke {

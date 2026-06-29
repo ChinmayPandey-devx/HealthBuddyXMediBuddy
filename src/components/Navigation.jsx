@@ -1,6 +1,9 @@
 import { Home, Activity, AlertTriangle, Stethoscope, MessageCircle } from 'lucide-react';
+import { useAppContext } from '../AppContext';
 
-export default function Navigation({ activeScreen, setActiveScreen }) {
+export default function Navigation() {
+  const { activeScreen, setActiveScreen, apiKey } = useAppContext();
+
   const navItems = [
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'summary', icon: Activity, label: 'Summary' },
@@ -10,49 +13,29 @@ export default function Navigation({ activeScreen, setActiveScreen }) {
   ];
 
   return (
-    <>
-      {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center p-2 z-50">
-        {navItems.map((item) => (
+    <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center p-2 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      {navItems.map((item) => {
+        const isActive = activeScreen === item.id;
+        const isDisabled = !apiKey && item.id !== 'home';
+
+        return (
           <button
             key={item.id}
-            onClick={() => setActiveScreen(item.id)}
-            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
-              activeScreen === item.id ? 'text-brand-blue' : 'text-gray-500 hover:bg-gray-50'
+            onClick={() => { if (!isDisabled) setActiveScreen(item.id); }}
+            disabled={isDisabled}
+            className={`flex flex-col items-center p-2 rounded-xl transition-all ${
+              isActive 
+                ? 'text-brand-blue scale-110' 
+                : isDisabled 
+                  ? 'text-gray-300 cursor-not-allowed' 
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
-            <item.icon className="w-6 h-6 mb-1" />
-            <span className="text-[10px] font-medium">{item.label}</span>
+            <item.icon className={`w-6 h-6 mb-1 ${isActive ? 'fill-blue-50' : ''}`} />
+            <span className={`text-[10px] font-semibold ${isActive ? 'font-bold' : ''}`}>{item.label}</span>
           </button>
-        ))}
-      </nav>
-
-      {/* Desktop Sidebar */}
-      <nav className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 bg-white border-r border-gray-200 py-8 px-4 z-50">
-        <div className="flex items-center gap-2 px-4 mb-8">
-          <div className="w-8 h-8 rounded-full bg-brand-blue flex items-center justify-center">
-            <Activity className="w-5 h-5 text-white" />
-          </div>
-          <h1 className="text-xl font-bold text-gray-900">HealthBuddy</h1>
-        </div>
-        
-        <div className="flex flex-col gap-2">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveScreen(item.id)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                activeScreen === item.id 
-                  ? 'bg-blue-50 text-brand-blue font-semibold shadow-sm' 
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <item.icon className={`w-5 h-5 ${activeScreen === item.id ? 'text-brand-blue' : 'text-gray-400'}`} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
-    </>
+        );
+      })}
+    </nav>
   );
 }

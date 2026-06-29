@@ -2,18 +2,24 @@ export const MOCK_USER = {
   name: "Raj",
   age: 32,
   gender: "Male",
+  profession: "working professional",
+  location: "India",
   metrics: {
-    heartRate: 88,
-    bloodPressure: "138/88",
-    spO2: 97,
-    sleep: 5.2,
-    steps: 3200,
-    stress: "High",
+    heartRate: { value: 88, unit: "bpm", status: "elevated" },
+    bloodPressure: { value: "138/88", unit: "mmHg", status: "rising" },
+    spO2: { value: 97, unit: "%", status: "normal" },
+    sleep: { value: 5.2, unit: "hrs", status: "low" },
+    steps: { value: 3200, unit: "steps", status: "low" },
+    stress: { value: "High", unit: "", status: "high" },
     healthScore: 62
   },
   trends: {
-    bloodPressure: "135/86 → 137/87 → 138/88 (rising)"
+    bloodPressure: [
+      { day: "3 Days Ago", value: "135/86" },
+      { day: "Yesterday", value: "137/87" },
+      { day: "Today", value: "138/88" }
+    ]
   }
 };
 
-export const SYSTEM_PROMPT = `You are HealthBuddy, a friendly AI health assistant. The user is Raj, a 32-year-old male. His current metrics: Heart Rate 88 bpm, BP 138/88 mmHg (rising trend over 3 days), SpO2 97%, Sleep 5.2 hours, Steps 3,200, Stress: High, Health Score: 62/100. Respond in plain, warm, non-alarming language. Never diagnose. Always recommend professional consultation for anything serious. Keep responses concise — 2 to 4 sentences per point.`;
+export const SYSTEM_PROMPT = `You are HealthBuddy, a friendly AI health assistant. The user is Raj, a 32-year-old male. His metrics: Heart Rate 88 bpm, BP 138/88 mmHg (rising 3-day trend), SpO2 97%, Sleep 5.2 hours, Steps 3,200, Stress High, Health Score 62/100. Respond in plain warm English. Never diagnose. Always recommend a doctor for anything serious. Keep responses to 2-4 sentences per point. Use clear section labels for multi-point answers.`;
