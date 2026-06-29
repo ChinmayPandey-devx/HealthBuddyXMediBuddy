@@ -1,52 +1,22 @@
-import { useState, useEffect } from 'react';
-import { Stethoscope, ClipboardList, CheckCircle2, Video, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { Stethoscope, ClipboardList, CheckCircle2, Video } from 'lucide-react';
 import { useAppContext } from '../AppContext';
-
-const Skeleton = () => (
-  <div className="space-y-3 animate-pulse">
-    <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
-    <div className="h-3 bg-gray-200 rounded w-full"></div>
-    <div className="h-3 bg-gray-200 rounded w-full"></div>
-    <div className="h-3 bg-gray-200 rounded w-5/6"></div>
-  </div>
-);
+import Typewriter from '../components/Typewriter';
+import { HARDCODED_RESPONSES } from '../data';
 
 export default function DoctorRecommendation() {
-  const { callOpenAI } = useAppContext();
-  const [prepSummary, setPrepSummary] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { openMediBuddy } = useAppContext();
   const [consent, setConsent] = useState(false);
-  const [error, setError] = useState(null);
-  const [connecting, setConnecting] = useState(false);
 
-  useEffect(() => {
-    const fetchPrep = async () => {
-      try {
-        const prompt = "Generate a pre-consultation summary for Raj — exactly 4 short bullet points: 1. Main concern, 2. Key data points, 3. Two questions to ask the doctor, 4. Urgency level. Do not use markdown headers, return plain text separated by newlines.";
-        const response = await callOpenAI(prompt);
-        const parts = response.split(/\n+/).filter(p => p.trim().length > 0);
-        setPrepSummary(parts);
-      } catch (err) {
-        setError(err.message || "Failed to load preparation details.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPrep();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleConnect = () => {
-    setConnecting(true);
-    setTimeout(() => {
-      setConnecting(false);
-      setConsent(false);
-      alert("Mock: Connection to MediBuddy simulated.");
-    }, 2000);
-  };
+  const sections = [
+    { title: "Main concern", text: HARDCODED_RESPONSES.doctor[0] },
+    { title: "Key data to share with your doctor", text: HARDCODED_RESPONSES.doctor[1] },
+    { title: "Questions to ask your doctor", text: HARDCODED_RESPONSES.doctor[2] },
+    { title: "Urgency", text: HARDCODED_RESPONSES.doctor[3] },
+  ];
 
   return (
-    <div className="p-4">
+    <div className="p-4 pb-24">
       <div className="text-center mb-6">
         <div className="w-12 h-12 bg-blue-50 text-brand-blue rounded-full flex items-center justify-center mx-auto mb-3">
           <Stethoscope className="w-6 h-6" />
@@ -56,25 +26,21 @@ export default function DoctorRecommendation() {
       </div>
 
       <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-5">
-        <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2 text-sm">
+        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2 text-sm border-b border-gray-100 pb-3">
           <ClipboardList className="w-4 h-4 text-brand-blue" />
           Pre-Consultation Summary
         </h3>
         
-        {loading ? (
-          <Skeleton />
-        ) : error ? (
-          <p className="text-brand-red text-sm bg-red-50 p-3 rounded-lg">{error}</p>
-        ) : (
-          <div className="space-y-3 text-sm text-gray-700">
-            {prepSummary && prepSummary.map((item, i) => (
-              <div key={i} className="flex items-start gap-2 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
-                <CheckCircle2 className="w-4 h-4 text-brand-green shrink-0 mt-0.5" />
-                <p className="leading-tight">{item.replace(/^[-*•]\s*/, '')}</p>
+        <div className="space-y-4">
+          {sections.map((sec, i) => (
+            <div key={i}>
+              <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wide mb-1">{sec.title}</h4>
+              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-gray-700">
+                <Typewriter text={sec.text} delay={1200 + (i * 300)} />
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
@@ -95,21 +61,15 @@ export default function DoctorRecommendation() {
       </div>
 
       <button 
-        disabled={!consent || connecting}
-        onClick={handleConnect}
+        disabled={!consent}
+        onClick={() => openMediBuddy()}
         className={`w-full p-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 text-sm
           ${consent 
             ? 'bg-[#1D9E75] hover:bg-[#158562] shadow-md hover:shadow-lg' 
             : 'bg-gray-300 cursor-not-allowed shadow-none'}`}
       >
-        {connecting ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
-        ) : (
-          <>
-            <Video className="w-5 h-5" />
-            Connect via MediBuddy
-          </>
-        )}
+        <Video className="w-5 h-5" />
+        Connect via MediBuddy
       </button>
     </div>
   );

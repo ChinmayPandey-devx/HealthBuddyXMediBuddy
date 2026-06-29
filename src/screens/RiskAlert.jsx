@@ -1,46 +1,19 @@
-import { useState, useEffect } from 'react';
-import { AlertTriangle, Info, Calendar, ArrowRight, Activity } from 'lucide-react';
+import { AlertTriangle, Info, Calendar, ArrowRight, Activity, Leaf, ChevronRight } from 'lucide-react';
 import { useAppContext } from '../AppContext';
-
-const Skeleton = () => (
-  <div className="space-y-4 animate-pulse mt-4">
-    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-    <div className="h-3 bg-gray-200 rounded w-full"></div>
-    <div className="h-3 bg-gray-200 rounded w-5/6"></div>
-  </div>
-);
+import Typewriter from '../components/Typewriter';
+import { HARDCODED_RESPONSES, AYURVEDIC_REMEDIES } from '../data';
 
 export default function RiskAlert() {
-  const { callOpenAI, setActiveScreen, user } = useAppContext();
-  const [explanation, setExplanation] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchExplanation = async () => {
-      try {
-        const prompt = "Explain what 138/88 mmHg means for Raj, why rising BP + poor sleep + high stress is concerning, and what he should do today. Exactly 3 sections, exactly 2 sentences each. Do not use markdown headers, separate paragraphs with double newlines.";
-        const response = await callOpenAI(prompt);
-        const parts = response.split(/\n+/).filter(p => p.trim().length > 0).slice(0, 3);
-        setExplanation(parts);
-      } catch (err) {
-        setError(err.message || "Failed to load alert details.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchExplanation();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const { setActiveScreen, user, openMediBuddy } = useAppContext();
 
   const sections = [
-    { title: "What this means", icon: Info },
-    { title: "Why it matters", icon: AlertTriangle },
-    { title: "What you should do", icon: Calendar },
+    { icon: Info },
+    { icon: AlertTriangle },
+    { icon: Calendar },
   ];
 
   return (
-    <div className="p-4">
+    <div className="p-4 pb-24">
       
       <div className="mb-4">
         <button onClick={() => setActiveScreen('home')} className="text-brand-blue text-sm font-semibold hover:underline">
@@ -65,40 +38,64 @@ export default function RiskAlert() {
             {user.trends.bloodPressure.map((trend, idx) => (
               <div key={idx} className="flex flex-col items-center">
                 <span className="text-[10px] text-gray-400 font-medium">{trend.day}</span>
-                <span>{trend.value}</span>
+                <span className="flex items-center gap-1">
+                  {trend.value}
+                  {idx > 0 && <span className="text-brand-red text-xs">&uarr;</span>}
+                </span>
               </div>
             ))}
           </div>
 
-          <div className="mt-5">
-            {loading ? (
-              <Skeleton />
-            ) : error ? (
-              <p className="text-brand-red text-sm bg-red-50 p-3 rounded-lg">{error}</p>
-            ) : (
-              <div className="space-y-4">
-                {explanation && explanation.map((text, i) => {
-                  const Section = sections[i] || sections[0];
-                  return (
-                    <div key={i} className="flex gap-3">
-                      <div className="mt-0.5 bg-blue-50 p-1.5 rounded-md shrink-0 h-fit">
-                        <Section.icon className="w-4 h-4 text-brand-blue" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900 text-sm mb-0.5">{Section.title}</h4>
-                        <p className="text-gray-600 text-sm leading-relaxed">{text.replace(/^(what this means|why it matters|what you should do):/i, '').trim()}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+          <div className="mt-5 space-y-4">
+            {HARDCODED_RESPONSES.alert.map((section, i) => {
+              const SectionUI = sections[i];
+              return (
+                <div key={i} className="flex gap-3">
+                  <div className="mt-0.5 bg-blue-50 p-1.5 rounded-md shrink-0 h-fit">
+                    <SectionUI.icon className="w-4 h-4 text-brand-blue" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-sm mb-0.5">{section.title}</h4>
+                    <Typewriter text={section.text} delay={1200 + (i * 200)} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
 
+      {/* Ayurvedic Remedies Section */}
+      <div className="mb-6">
+        <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+          <Leaf className="w-5 h-5 text-brand-green" />
+          Natural remedies you can try
+        </h3>
+        <div className="space-y-3">
+          {AYURVEDIC_REMEDIES.map((remedy, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+              <div className="flex items-start gap-3">
+                <div className="text-3xl shrink-0 bg-gray-50 p-2 rounded-xl border border-gray-100">{remedy.emoji}</div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-gray-900 text-sm">{remedy.name}</h4>
+                  <p className="text-xs font-semibold text-brand-green mt-0.5 mb-1">{remedy.helps}</p>
+                  <p className="text-gray-600 text-[11px] leading-relaxed mb-3">{remedy.how}</p>
+                  <button 
+                    onClick={() => openMediBuddy(remedy)}
+                    className="flex items-center justify-between w-full bg-brand-green/10 hover:bg-brand-green/20 text-brand-green px-3 py-2 rounded-lg text-xs font-bold transition-colors"
+                  >
+                    <span>Buy on MediBuddy</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <button 
-        onClick={() => setActiveScreen('doctor')}
+        onClick={() => openMediBuddy()}
         className="w-full bg-gray-900 hover:bg-black text-white p-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm shadow-md"
       >
         Book Doctor Consultation
